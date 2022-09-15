@@ -1,0 +1,9 @@
+node_modules
+# Keep environment variables out of version control
+Vagrantfile
+.Vagrant
+package-lock.json
+.gitmessage
+prisma/migrations
+.env
+/src/logger/logs
