@@ -1,5 +1,3 @@
-# FLint
-
 # Flint
 Flint is a fintech project that allows businesses in Africa to recieve payment from other contries via cryptocurrency.
 
