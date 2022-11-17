@@ -16,8 +16,76 @@ export const signUpValidation = Joi.object({
   password: Joi.string().min(6).required().messages(message),
   firstname: Joi.string().required().messages(message),
   lastname: Joi.string().required().messages(message),
-  role: Joi.string().messages(message),
+  status: Joi.string().required().messages(message),
 });
+
+
+export const businessValidation = Joi.object({
+  businessName: Joi.string().required().messages(message),
+  businessShort: Joi.string().required().messages(message),
+  businessDescription: Joi.string().required().messages(message),
+  user: Joi.any().required().messages(message),
+});
+export const businessUpdateValidation = Joi.object({
+  businessName: Joi.string().required().messages(message),
+  businessShort: Joi.string().required().messages(message),
+  businessDescription: Joi.string().required().messages(message),
+  businessEmail : Joi.any().required().messages(message),
+  businessNumber: Joi.any().required().messages(message),
+  businessCountry : Joi.any().required().messages(message),
+  businessAdress : Joi.any().required().messages(message),
+  user: Joi.any().required().messages(message)
+})
+
+
+export const paymentPageValidation = Joi.object({
+  paymentType : Joi.string().required().messages(message),
+  paymentLabel : Joi.string().required().messages(message),
+  paymentDescription : Joi.string().required().messages(message),
+  amount : Joi.number().required().messages(message),
+  currency : Joi.string().required().messages(message),
+  paymentLinkTag : Joi.string().required().messages(message),
+  user: Joi.any().required().messages(message),
+  business: Joi.any().required().messages(message)
+})
+
+export const updatePaymentPageValidation = Joi.object({
+  paymentType : Joi.string().required().messages(message),
+  paymentLabel : Joi.string().required().messages(message),
+  paymentDescription : Joi.string().required().messages(message),
+  amount : Joi.number().required().messages(message),
+  currency : Joi.string().required().messages(message),
+  paymentLinkTag : Joi.string().required().messages(message),
+  user: Joi.any().required().messages(message),
+  business: Joi.any().required().messages(message),
+  paymentPage: Joi.any().required().messages(message)
+})
+
+
+export const transactionValidation = Joi.object({
+
+  paymentType : Joi.string().required().messages(message),
+  paymentLabel : Joi.string().required().messages(message),
+  paymentDescription : Joi.string().required().messages(message),
+  amount : Joi.number().required().messages(message),
+  currency : Joi.string().required().messages(message),
+  customer:Joi.any().required().messages(message),
+  rate: Joi.string().required().messages(message),
+  payment: Joi.any().required().messages(message),
+  paymentCurrency: Joi.string().required().messages(message),
+  charge: Joi.any().required().messages(message),
+  balance: Joi.any().required().messages(message),
+  paymentMethod: Joi.string().required().messages(message),
+  status: Joi.string().required().messages(message),
+  paymentLinkTag : Joi.string().required().messages(message),
+  //paymentChannelId : Joi.number().required().messages(message),
+  paymentAddress : Joi.string().required().messages(message),
+  user: Joi.any().required().messages(message),
+  paymentPage: Joi.any().required().messages(message)
+})
+
+
+
 export const userUpdateValidation  = Joi.object({
   firstname: Joi.string().required().messages(message),
   lastname: Joi.string().required().messages(message),

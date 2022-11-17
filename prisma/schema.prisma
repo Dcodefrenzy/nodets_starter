@@ -9,20 +9,191 @@ datasource db {
   provider = "postgres"
   url      = env("DATABASE_URL")
 }
+enum Status {
+  MERCHANT
+  FREELANCER
+  STARTUP
+}
 
 model User {
     id Int @id @default(autoincrement())
+    uuid String @db.Uuid @default(uuid())
     email String @unique
     password String
     firstname String
     lastname String
-    role Role
-    creationDate DateTime @default(now())
-    lastUpdated DateTime   @updatedAt
+    status Status @default(MERCHANT)
+    businesses Business[] @relation("user-business")
+    paymentChannel PaymentChannel[] @relation("admin")
+    createdAt DateTime @default(now())
+    updatedAt DateTime   @updatedAt
 }
 
-enum Role {
-  USER
-  ADMIN
+
+model Business {
+  id Int @id @default(autoincrement())
+  uuid String @db.Uuid @default(uuid())
+  businessName String
+  businessShort String
+  businessDescription String  @db.Text
+  businessEmail String? @unique
+  businessNumber String?
+  businessCountry String?
+  businessAdress String?
+  owner User @relation("user-business", fields: [ownerId], references: [id])
+  ownerId Int
+  paymentsPage PaymentPage[] @relation("business-payment")
+  transaction Transaction[] @relation("business-transaction")
+  wallet Wallet[] @relation("business-wallet")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+//model Kyc {}
+
+enum FiatCurrency {
+  USD
+  NGN
+  GHS
+}
+enum CryptoCurrency {
+  USDT
+}
+
+enum Currency {
+  USD
+  NGN
+  GHS
+  USDT
+}
+
+enum PaymentType {
+  SERVICES
+  PRODUCT
+  TRANSFER
+  WITHDRAW
+}
+
+model PaymentPage {
+  id Int @id @default(autoincrement())
+  uuid String @db.Uuid @default(uuid())
+  paymentType PaymentType
+  paymentLabel String
+  paymentDescription String @db.Text
+  amount Decimal @db.Decimal(10,2)
+  currency FiatCurrency
+  paymentLinkTag String?
+  published Boolean @default(false)
+  business Business @relation("business-payment", fields: [businessId], references: [id])
+  businessId Int
+  transactions Transaction[] @relation("payment-transaction")   
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum PaymentStatus {
+  INPROGRESS
+  PAID
+  FAILED
+  PENDING
+}
+model PaymentChannel {
+  id Int @id @default(autoincrement())
+  uuid String @db.Uuid @default(uuid())
+  method String
+  channel String
+  admin User @relation("admin", fields: [adminId], references: [id])
+  adminId Int
+  //transactions Transaction[] @relation("paymentChannel-transaction")
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Transaction {
+  id Int @id @default(autoincrement())
+  uuid String @db.Uuid @default(uuid())
+  paymentType PaymentType
+  paymentLabel String
+  paymentDescription String @db.Text
+  amount Decimal @db.Decimal(10,2)
+  currency FiatCurrency
+  customer Json
+  payment Decimal @db.Decimal(10,2)
+  paymentCurrency Currency
+  rate String
+  charge Decimal @db.Decimal(10,2)
+  balance Decimal @db.Decimal(10,2)
+  //paymentchannel PaymentChannel @relation("paymentChannel-transaction", fields: [paymentChannelId], references: [id])
+  //paymentChannelId Int
+  paymentAddress String
+  status PaymentStatus
+  paymentLinkTag String
+  paymentPage PaymentPage @relation("payment-transaction", fields: [paymentPageId], references: [id])
+  paymentPageId  Int
+  business Business @relation("business-transaction", fields: [businessId], references: [id])
+  businessId Int
+  wallet Wallet[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Withdrawal {
+  id Int @id @default(autoincrement())
+  uuid String @db.Uuid @default(uuid())
+  paymentLabel String
+  amount Decimal @db.Decimal(10,2)
+  currency Currency
+  payment Decimal @db.Decimal(10,2)
+  paymentCurrency Currency
+  rate String
+  status PaymentStatus
+  wallet Wallet[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Transfer {
+  id Int @id @default(autoincrement()) 
+  uuid String @db.Uuid @default(uuid())  
+  paymentLabel String
+  amount Decimal @db.Decimal(10,2)
+  currency Currency
+  customer Json
+  payment Decimal @db.Decimal(10,2)
+  paymentCurrency Currency
+  rate String
+  status PaymentStatus
+  wallet  Wallet[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}
+model Wallet {
+  id Int @id @default(autoincrement()) 
+  uuid String @db.Uuid @default(uuid())
+  balance Decimal @db.Decimal(10,2)
+  currency Currency
+  transactions Transaction[] 
+  withdrawal Withdrawal[]
+  transfers  Transfer[]
+  business Business @relation("business-wallet", fields: [businessId], references: [id])
+  businessId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}
+enum WithdrawMethod {
+  FIAT
+  CRYPTO
+}
+model WithdrawalMethod {
+  id Int @id @default(autoincrement())
+  uuid String @db.Uuid @default(uuid())
+  currency Currency
+    //account number
+  address String
+  name String
+  //for fiat banks/ for crypto chain
+  institution String
+  method WithdrawMethod 
+  createdAt DateTime @default(now())
+  updatedAt DateTime  @updatedAt
+}

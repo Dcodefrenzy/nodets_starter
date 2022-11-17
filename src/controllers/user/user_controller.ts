@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { Role } from "@prisma/client";
+import { Status } from "@prisma/client";
 import  prisma  from '../../db/db';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -35,21 +35,23 @@ export const createUser = async (req:Request, res:Response)=>{
                 password: hashedPassword,
                 firstname: userBody.firstname,
                 lastname: userBody.lastname,
-                role: Role.USER,
+                status: userBody.status,
             }
         })
         
         res.status(201).json(_.omit(user, 'password', 'id', 'lastUpdated', 'creationDate'));
         return;
     } catch (error:any) {
+        logger.error(error.message); 
+        logger.error(error); 
+        
         if (error.isJoi === true) {
             let  e = postRequestError(error); 
             res.status(e.errorCode).json(e);  
             return; 
         }
         res.status(500).json("Duplicate/ User already Exist.");
-        return;
-        logger.error(error.message);   
+        return;  
     }
 }
 
@@ -127,4 +129,6 @@ export const userLogin =async (req:Request, res:Response) => {
   }
 
 }
+
+
 

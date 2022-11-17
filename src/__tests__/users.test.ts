@@ -1,16 +1,21 @@
-import { send } from "process";
 import request from "supertest";
 import app from '../index';
 import prisma from '../db/db';
-import { userInfo } from "os";
 
 
 
-beforeAll(async() => (await prisma.user.deleteMany({})))
+beforeAll(async() => {
+    await prisma.transaction.deleteMany({});
+    await prisma.wallet.deleteMany({});
+    await prisma.paymentPage.deleteMany({});
+    await prisma.business.deleteMany({});
+    await prisma.user.delete({where: {email: "user1@gmail.com"}});
+})
+
 
 //afterAll(async() => ( await prisma.user.deleteMany({})))
 
-describe("Register User", ()=>{
+describe("User Testing", ()=>{
     let user_id:number;
     
     const user = {
@@ -18,14 +23,14 @@ describe("Register User", ()=>{
             password:"123456",
             lastname: "Doe",
             firstname:"John",
-            role:"USER",
+            status:"MERCHANT",
     }
     const badUser = {
         email: 'user',
         password: 1234,
         firstname: 'John Doe',
         lastname: 'I am a software Developer',
-        role: 12334
+        status: 12334
     } 
     it('POST/ Validate and Create a User', async ()=>{
         const response = await request(app)
@@ -33,14 +38,14 @@ describe("Register User", ()=>{
             .send(user)
             .expect(201)
             .expect('Content-Type', /json/);
-        expect(response.body).toEqual(
-            expect.objectContaining({
-                email:"user1@gmail.com",
-                lastname: "Doe",
-                firstname:"John",
-                role:"USER"
-            })
-        );
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    email:"user1@gmail.com",
+                    lastname: "Doe",
+                    firstname:"John",
+                    status:"MERCHANT"
+                })
+            );
     });
     it('POST/ Should not Add Duplicate User', async ()=>{
         const response = await request(app)
@@ -55,15 +60,15 @@ describe("Register User", ()=>{
             .post("/test/users/create")
             .send(badUser)
             .expect(400);
-        expect(response.body).toEqual(
-            expect.objectContaining({
-                errorCode: expect.any(Number),
-                errorLabel: expect.any(String),
-                errorMessage: expect.any(String),
-                errorType: expect.any(String),
-                errorAction: expect.any(String),
-            })
-        );
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    errorCode: expect.any(Number),
+                    errorLabel: expect.any(String),
+                    errorMessage: expect.any(String),
+                    errorType: expect.any(String),
+                    errorAction: expect.any(String),
+                })
+            );
     });
 
     it('GET USERS', async ()=>{
@@ -77,12 +82,13 @@ describe("Register User", ()=>{
                         expect.objectContaining({
                             email: expect.any(String),
                             id: expect.any(Number),
+                            uuid: expect.any(String),
                             password: expect.any(String),
                             lastname: expect.any(String),
                             firstname:expect.any(String),
-                            role:expect.any(String),
-                            creationDate:expect.any(String),
-                            lastUpdated :expect.any(String)
+                            status:expect.any(String),
+                            createdAt:expect.any(String),
+                            updatedAt :expect.any(String)
                         })
                     ])
                 )
@@ -100,11 +106,12 @@ describe("Register User", ()=>{
             expect.objectContaining({
                 email: expect.any(String),
                 id: expect.any(Number),
+                uuid: expect.any(String),
                 lastname: expect.any(String),
                 firstname:expect.any(String),
-                role:expect.any(String),
-                creationDate:expect.any(String),
-                lastUpdated :expect.any(String)
+                status:expect.any(String),
+                createdAt:expect.any(String),
+                updatedAt :expect.any(String)
             })
         );
     });
@@ -130,13 +137,16 @@ describe("Register User", ()=>{
             .post(`/test/users/login`)
             .send({email:user.email, password:user.password})
             .expect('Content-Type', /json/)
-            .expect(200);
-        expect(response.body).toEqual(
-            expect.objectContaining({
-                id: expect.any(Number),
-                token: expect.any(String),
+            .expect(200)
+            .then((response)=>{
+                expect(response.body).toEqual(
+                    expect.objectContaining({
+                        id: expect.any(Number),
+                        token: expect.any(String),
+                    })
+                
+                );
             })
-        );
     });
 })
 
